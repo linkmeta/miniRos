@@ -30,15 +30,14 @@
 #define RTT_CMD_TASK_STACK_SIZE             (configMINIMAL_STACK_SIZE+200)
 
 
-
 #define US_MESSURE_TASK_PRIO          1
 #define US_MESSURE_TASK_STACK_SIZE          (configMINIMAL_STACK_SIZE+100)
 
 #define WIFI_RECV_TASK_PRIO           1
-#define WIFI_RECV_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE+100)
+#define WIFI_RECV_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE+200)
 
 #define LOBOT_RECV_TASK_PRIO          1
-#define LOBOT_RECV_TASK_STACK_SIZE          (configMINIMAL_STACK_SIZE+100)
+#define LOBOT_RECV_TASK_STACK_SIZE          (configMINIMAL_STACK_SIZE+200)
 
 /* Logging and RTT */
 #define LOG(str, ...) SEGGER_RTT_printf(0, RTT_CTRL_RESET str, ##__VA_ARGS__)

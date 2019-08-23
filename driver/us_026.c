@@ -15,6 +15,9 @@
 #include "us_026.h"
 #include "oled.h"
 #include "utils.h"
+#include "message.h"
+#include "miniros.h"
+#include "sensor.h"
 
 const nrf_drv_timer_t TIMER_US026 = NRF_DRV_TIMER_INSTANCE(1);
 
@@ -41,21 +44,12 @@ void timer_event_handler(nrf_timer_event_t event_type, void* p_context)
 static void us_messure_task(void * pvParameter)
 {
     UNUSED_PARAMETER(pvParameter);
-//    ret_code_t ret;
-    int distance = 0;
-    char buf[20];
-//    size_t xReceivedBytes;
-//    uint8_t buf[WIFI_RECV_STREAM_BUF];
+
     while(1)
     {
         us026_messure();
         vTaskDelay(US026_MESSURE_TIMER_PERIOD); 
         LOG("us get distance:%d!\n",g_cur_distance);
-//        memset(buf,0,sizeof(buf));
-        sprintf(buf,"distance:%4dcm",g_cur_distance/10);
-//        oled_show_info1(buf);
-        miniros_cmd_send("oled",1,buf);
-      
     }
 }
 
@@ -88,7 +82,7 @@ void irq_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
         g_cur_distance = (cnt_new-cnt)*17/1600;//mm
         LOG("us026 messure distance is:%dmm\n",g_cur_distance);
         itoa(g_cur_distance,string,10);
-        miniros_msg_send("sensor",0,string);
+        miniros_msg_send("sensor",DISTANCE_INFO,string);
 //        miniros_msg_send("message",0,string);
     }
 }

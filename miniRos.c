@@ -25,6 +25,8 @@
 #include "lobot.h"
 #include "message.h"
 #include "sensor.h"
+#include "manipulation.h"
+
 static xQueueHandle miniros_cmd_queue;
 static TaskHandle_t miniros_process_task_t;
 
@@ -112,7 +114,7 @@ MINIROS_DEV_LIST_S *miniros_dev_find(MINIROS_DEV_LIST_S *list_first, uint8_t *de
 void miniros_cmd_send(uint8_t *dev, uint8_t cmd_id, uint8_t *cmd_buf)
 {
     BaseType_t xStatus;
-    MINIROS_CMD_S cmd;
+    MINIROS_CMD_S cmd={0};
     memcpy(cmd.dev,dev,strlen(dev)+1);
     cmd.cmd_id = cmd_id;
     memcpy(cmd.cmd_buf,cmd_buf,strlen(cmd_buf)+1);
@@ -126,7 +128,7 @@ void miniros_cmd_send(uint8_t *dev, uint8_t cmd_id, uint8_t *cmd_buf)
 static void miniros_process_task(void * pvParameter)
 {
     UNUSED_PARAMETER(pvParameter);
-    MINIROS_CMD_S miniros_cmd;
+    MINIROS_CMD_S miniros_cmd={0};
     BaseType_t xStatus;
     uint8_t cmd_cnt = 0;
     MINIROS_DEV_LIST_S *find_dev_list;
@@ -143,7 +145,7 @@ static void miniros_process_task(void * pvParameter)
             if(find_dev_list)
                 find_dev_list->device.handler(miniros_cmd.cmd_id,miniros_cmd.cmd_buf);
             else
-                LOG( "Queue msg list cannot find module!\n" );
+                LOG( "Queue dev list cannot find module!\n" );
         }
         vTaskDelay(1000);
     }
@@ -151,18 +153,17 @@ static void miniros_process_task(void * pvParameter)
 
 void miniros_init()
 {
-
+    //miniRos modules init.
     miniros_msg_init();
     sensor_module_init();
+    manipulation_module_init();
 
     //miniRos drivers init.
     nrf52840_init();
-    oled_init();
     lobot_init();
     wifi_init();
+    oled_init();
     us026_init();
-
-
 
     miniros_cmd_queue = xQueueCreate( MINIROS_CMD_QUEUE_MAX , sizeof( MINIROS_CMD_S) );
 

@@ -42,6 +42,7 @@
 #include "nrf_drv_power.h"
 #include "nrf52840.h"
 #include "miniRos.h"
+#include "message.h"
 #include "utils.h"
 
 #if defined (UART_PRESENT)
@@ -171,28 +172,38 @@ static void nrf_qwr_error_handler(uint32_t nrf_error)
  */
 /**@snippet [Handling the data received over BLE] */
 
-extern xQueueHandle miniros_cmd_queue;
+//extern xQueueHandle miniros_cmd_queue;
 static void nus_data_handler(ble_nus_evt_t * p_evt)
 {
     BaseType_t xStatus;
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    char cmd_id;
-    MINIROS_CMD_S miniros_cmd;
-    memset(&miniros_cmd,0,sizeof(MINIROS_CMD_S));
+    char id;
+    uint8_t type[10];
+    uint8_t dest[20];
+    uint8_t buf[32];
+    uint8_t temp[100];
     if (p_evt->type == BLE_NUS_EVT_RX_DATA)
     {
-        uint32_t err_code;
-
         LOG("Received data from BLE NUS.");
         LOG("data:%s, len:%d\n",p_evt->params.rx_data.p_data, p_evt->params.rx_data.length);
+        memset(type,0,sizeof(type));
+        memset(dest,0,sizeof(dest));
+        memset(buf,0,sizeof(buf));
+        memset(temp,0,sizeof(temp));
         if(p_evt->params.rx_data.length>0){
-            sscanf(p_evt->params.rx_data.p_data,"%s %d %s",miniros_cmd.dev,&cmd_id,miniros_cmd.cmd_buf);
-            miniros_cmd_send(miniros_cmd.dev,cmd_id,miniros_cmd.cmd_buf);
+//                temp[strlen(temp)] = '\0';
+            memcpy(temp,p_evt->params.rx_data.p_data,p_evt->params.rx_data.length);
+            LOG( "temp:%s!\n",temp );
+            sscanf(temp,"%s %s %d %s",dest,type,&id,buf);
 
-            LOG("Received msg from BLE NUS. Writing data to Queue.");
+            LOG( "nus_data_handler:%s,%s,%d,%s!\n",dest,type,id,buf );
+            if(0==strcmp(type,"cmd"))
+                miniros_cmd_send(dest,id,buf);
+            else
+                miniros_msg_send(dest,id,buf);
+                
         }
     }
-
 }
 /**@snippet [Handling the data received over BLE] */
 
@@ -594,27 +605,49 @@ static void advertising_start(void)
 static void nrf_rtt_cmd_task(void * pvParameter)
 {
     UNUSED_PARAMETER(pvParameter);
-    char buf[64];
+    char recv_buf[64];
     BaseType_t xStatus;
-    char cmd_id;
-
-    MINIROS_CMD_S miniros_cmd;
+    char id;
+    uint8_t type[10];
+    uint8_t dest[20];
+    uint8_t buf[32];
+//    MINIROS_CMD_S miniros_cmd={0};
     while(1)
     {
+        memset(recv_buf,0,sizeof(recv_buf));
+        memset(type,0,sizeof(type));
+        memset(dest,0,sizeof(dest));
         memset(buf,0,sizeof(buf));
-
-        SEGGER_RTT_Read(0,buf,sizeof(buf));
-        if(strlen(buf)>0)
+        SEGGER_RTT_Read(0,recv_buf,sizeof(recv_buf));
+        if(strlen(recv_buf)>0)
         {
-            LOG("receive buf: %s\n",buf);
-            sscanf(buf,"%s %d %s",miniros_cmd.dev,&cmd_id,miniros_cmd.cmd_buf);
-//            sscanf(buf,"%s %d %s",dev,&cmd_id,cmd_buf);
+            LOG("receive buf: %s\n",recv_buf);
+//            sscanf(buf,"%s %d %s",miniros_cmd.dev,&cmd_id,miniros_cmd.cmd_buf);
+            sscanf(recv_buf,"%s %s %d %s",dest,type,&id,buf);
 
-            LOG( "nrf_rtt_cmd_task:%s,%d,%s!\n",miniros_cmd.dev,cmd_id,miniros_cmd.cmd_buf );
-            miniros_cmd_send(miniros_cmd.dev,cmd_id,miniros_cmd.cmd_buf);
+            LOG( "nrf_rtt_cmd_task:%s,%s,%d,%s!\n",dest,type,id,buf );
+            if(0==strcmp(type,"cmd"))
+                miniros_cmd_send(dest,id,buf);
+            else
+                miniros_msg_send(dest,id,buf);
 
         }
         vTaskDelay(1000);
+    }
+}
+
+void bt_cmd_process(uint8_t cmd_id,uint8_t *cmd_buf)
+{
+    ret_code_t ret;
+
+    LOG("bt cmd process:%d %s!\n",cmd_id,cmd_buf);
+    switch(cmd_id)
+    {
+        case 0:
+        bt_send_data(cmd_buf,strlen(cmd_buf));
+
+        default:
+        break;
     }
 }
 
@@ -653,6 +686,8 @@ void nrf52840_init()
     advertising_start();
     /* Create task for rtt cmd process with priority set to 2 */
     xTaskCreate(nrf_rtt_cmd_task,"RTT",RTT_CMD_TASK_STACK_SIZE,NULL,RTT_CMD_TASK_PRIO,&nrf_rtt_task_t);
+    
+    miniros_dev_register("bt",bt_cmd_process);
 }
 
 /** @} */

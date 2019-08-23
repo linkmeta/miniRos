@@ -1,5 +1,4 @@
 
-
 #ifndef __MESSAGE_H
 #define	__MESSAGE_H
 
@@ -28,23 +27,8 @@ typedef struct miniros_msg_module_list_s{
 
 }MINIROS_MSG_MODULE_LIST_S;
 
-//static uint8_t miniros_module_idx[MINIROS_MODULE_NUM_MAX][20] = {
-//    "sensor",
-//    "controller",
-//    "dynamixel",
-//    "manipulation",
-//};
-
-
-
 void miniros_msg_init();
 void miniros_msg_send(uint8_t *msg_dest, uint8_t msg_id, uint8_t *msg_buf);
 void miniros_msg_module_register(uint8_t *module_name,void (*handler)(uint8_t msg_id,uint8_t *msg_buf));
 
 #endif /* __MESSAGE_H */
-
-
-
-
-
-

@@ -288,22 +288,25 @@ void recv_handler(char *buf)
         LOG("lobot get battery voltage:%d!\n",batteryVolt);
 
         sprintf(temp,"battery volt:%dmV",batteryVolt);
-        oled_show_info2(temp);
-        bt_send_data(temp,strlen(temp));
+//        oled_show_info(2,temp);
+//        bt_send_data(temp,strlen(temp));
+        miniros_cmd_send("oled",2,temp);
+        miniros_cmd_send("bt",0,temp);
+
         break;
     default:
         break;
     }
 }
-
-extern void bt_send_data( uint8_t   * p_data,
-                   uint16_t  length);
+//
+//extern void bt_send_data( uint8_t   * p_data,
+//                   uint16_t  length);
 static void lobot_recv_task(void * pvParameter)
 {
     UNUSED_PARAMETER(pvParameter);
     ret_code_t ret;
     size_t xReceivedBytes;
-    uint8_t buf[16];
+    uint8_t buf[20];
     while(1)
     {
         char c;
@@ -367,7 +370,7 @@ void lobot_cmd_process(uint8_t cmd_id, uint8_t *cmd_buf)
     LOG("lobot cmd process:%d,%s!\n",cmd_id,cmd_buf);
 //    ret = nrf_serial_init(&serial0_uarte, &m_uarte0_drv_config, &serial0_config);
 //    APP_ERROR_CHECK(ret);
-    memset(buf,0,sizeof(buf));
+//    memset(buf,0,sizeof(buf));
     memset(buf1,0,sizeof(buf1));
     memset(buf2,0,sizeof(buf2));
     memset(buf3,0,sizeof(buf3));
@@ -379,7 +382,7 @@ void lobot_cmd_process(uint8_t cmd_id, uint8_t *cmd_buf)
         break;
         case SINGLE_CONTROL:
             LOG("lobot single process:%s!\n",cmd_buf);
-            sscanf(buf,"%s-%s-%s",&buf1,&buf2,&buf3);
+            sscanf(cmd_buf,"%s-%s-%s",&buf1,&buf2,&buf3);
             id = atoi(buf1);
             position = atoi(buf2);
             time = atoi(buf3);
@@ -388,7 +391,7 @@ void lobot_cmd_process(uint8_t cmd_id, uint8_t *cmd_buf)
 
         case GROUP_CONTROL:
             LOG("lobot group process:%s!\n",buf);
-            sscanf(buf,"%s-%s",&buf1,&buf2);
+            sscanf(cmd_buf,"%s-%s",&buf1,&buf2);
             id = atoi(buf1);
             time = atoi(buf2);
             runActionGroup(id,time);

@@ -21,16 +21,8 @@
 #define X_WIDTH 128
 #define Y_WIDTH 64
 
-//void LCD_Init(void);
-//void LCD_P6x8Str(unsigned char x, unsigned char y,unsigned char ch[]);
-//void LCD_P8x16Str(unsigned char x, unsigned y,unsigned char ch[]);
-//void LCD_P16x16Ch(unsigned char x, unsigned char y,unsigned char  N);
-//void Draw_BMP(unsigned char x0, unsigned char y0,unsigned char x1, unsigned char y1,unsigned char BMP[]);
 void oled_init();
-void oled_show_info1(unsigned char *buf);
-void oled_show_info2(unsigned char *buf);
-void oled_show_info3(unsigned char *buf);
-void oled_show_info4(unsigned char *buf);
+void oled_show_info(uint8_t id,uint8_t *buf);
 
 void oled_msg_process(uint8_t *msg_buf);
 

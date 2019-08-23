@@ -7,7 +7,7 @@
 #include "utils.h"
 
 #define MINIROS_PROCESS_TASK_PRIO             2
-#define MINIROS_PROCESS_TASK_STACK_SIZE       (configMINIMAL_STACK_SIZE+400)
+#define MINIROS_PROCESS_TASK_STACK_SIZE       (configMINIMAL_STACK_SIZE+1024)
 
 #define MINIROS_CMD_QUEUE_MAX 10
 
