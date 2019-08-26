@@ -99,6 +99,7 @@ void lobot_uart_write(void *buf, uint32_t len)
  **********************************************************************************/
 void moveServo(uint8_t servoID, uint16_t Position, uint16_t Time)
 {
+    LOG("moveServo:%d %d %d\n",servoID,Position,Time);
     if (servoID > 31 || !(Time > 0)) {  //舵机ID不能打于31,可根据对应控制板修改
        return;
     }
@@ -362,18 +363,19 @@ void lobot_cmd_send(void *cmd_buf)
 void lobot_cmd_process(uint8_t cmd_id, uint8_t *cmd_buf)
 {
     ret_code_t ret;
-    uint8_t id;
-    uint16_t position;
-    uint16_t time;
-    char *buf;
-    char buf1[10],buf2[10],buf3[10];
+    int id;
+    int position;
+    int time;
+//    uint8_t buf[100];
+//    uint8_t buf1[10],buf2[10],buf3[10];
     LOG("lobot cmd process:%d,%s!\n",cmd_id,cmd_buf);
 //    ret = nrf_serial_init(&serial0_uarte, &m_uarte0_drv_config, &serial0_config);
 //    APP_ERROR_CHECK(ret);
 //    memset(buf,0,sizeof(buf));
-    memset(buf1,0,sizeof(buf1));
-    memset(buf2,0,sizeof(buf2));
-    memset(buf3,0,sizeof(buf3));
+//    memset(buf1,0,sizeof(buf1));
+//    memset(buf2,0,sizeof(buf2));
+//    memset(buf3,0,sizeof(buf3));
+//    memcpy(buf,cmd_buf,strlen(cmd_buf));
     switch(cmd_id)
     {
         case GET_BATTERY_VOLTAGE:
@@ -382,18 +384,23 @@ void lobot_cmd_process(uint8_t cmd_id, uint8_t *cmd_buf)
         break;
         case SINGLE_CONTROL:
             LOG("lobot single process:%s!\n",cmd_buf);
-            sscanf(cmd_buf,"%s-%s-%s",&buf1,&buf2,&buf3);
-            id = atoi(buf1);
-            position = atoi(buf2);
-            time = atoi(buf3);
+//            sscanf(buf,"%[0-9]-%[0-9]-%[0-9]",buf1,buf2,buf3);
+            sscanf(cmd_buf,"%d-%d-%d",&id,&position,&time);
+            LOG("lobot single process:%d %d %d!\n",id,position,time);
+//            LOG("lobot single process:%s %s %s!\n",buf1,buf2,buf3);
+//            id = atoi(buf1);
+//            position = atoi(buf2);
+//            time = atoi(buf3);
+//            moveServo(1,1500,500);
             moveServo(id,position,time);
         break;
 
         case GROUP_CONTROL:
-            LOG("lobot group process:%s!\n",buf);
-            sscanf(cmd_buf,"%s-%s",&buf1,&buf2);
-            id = atoi(buf1);
-            time = atoi(buf2);
+            LOG("lobot group process:%s!\n",cmd_buf);
+//            sscanf(cmd_buf,"%s-%s",&buf1,&buf2);
+            sscanf(cmd_buf,"%d-%d",&id,&time);
+//            id = atoi(buf1);
+//            time = atoi(buf2);
             runActionGroup(id,time);
         break;
         case STOP_CONTROL:

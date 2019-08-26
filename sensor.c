@@ -32,7 +32,7 @@ void sensor_msg_handle(uint8_t msg_id,uint8_t *msg_buf)
         distance = atoi(msg_buf);
         sprintf(buf,"distance:%4dcm",distance/10);
         miniros_cmd_send("oled",1,buf);
-        miniros_cmd_send("bt",0,buf);
+//        miniros_cmd_send("bt",0,buf);
         break;
 
         default:
